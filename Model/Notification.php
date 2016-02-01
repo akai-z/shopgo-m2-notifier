@@ -98,7 +98,7 @@ class Notification extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Set notification
+     * Set notification ID
      *
      * @param string $notificationName
      * @param string $notificationId
