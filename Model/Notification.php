@@ -151,46 +151,63 @@ class Notification extends \Magento\Framework\Model\AbstractModel
      * @param string|string[] $description
      * @param string $url
      * @param bool $isInternal
-     * @return void
+     * @return boolean
      */
     public function addNotification($severity, $name, $title, $description, $url = '', $isInternal = true)
     {
+        $result = false;
+        
         switch ($severity) {
             case MessageInterface::SEVERITY_CRITICAL:
                 $this->_notificationInbox->addCritical($title, $description, $url, $isInternal);
+                $result = true;
                 break;
             case MessageInterface::SEVERITY_MAJOR:
                 $this->_notificationInbox->addMajor($title, $description, $url, $isInternal);
+                $result = true;
                 break;
             case MessageInterface::SEVERITY_MINOR:
                 $this->_notificationInbox->addMinor($title, $description, $url, $isInternal);
+                $result = true;
                 break;
             case MessageInterface::SEVERITY_NOTICE:
                 $this->_notificationInbox->addNotice($title, $description, $url, $isInternal);
+                $result = true;
                 break;
             default:
                 $this->_notificationInbox->add($severity, $title, $description, $url, $isInternal);
+                $result = true;
         }
 
-        $notice = $this->_notificationInbox->loadLatestNotice();
-        $this->setNotificationId($name, $notice->getNotificationId());
+        if ($result) {
+            $notice = $this->_notificationInbox->loadLatestNotice();
+            $this->setNotificationId($name, $notice->getNotificationId());
+        }
+        
+        return $result;
     }
 
     /**
      * Remove notification
      *
      * @param string $notificationName
-     * @return void
+     * @return boolean
      */
     public function removeNotification($notificationName)
     {
+        $result = false;
         $notificationId = $this->getNotificationId($notificationName);
 
         if ($notificationId) {
             $notification = $this->_notificationInbox->load($notificationId);
+
             $notification->setIsRemove(1)->save();
             $this->setNotificationId($notificationName, 0);
+
+            $result = true;
         }
+        
+        return $result;
     }
 
     /**
