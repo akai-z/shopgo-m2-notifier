@@ -6,6 +6,6 @@
 
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
-    'ShopGo_Limiter',
+    'ShopGo_Notifier',
     __DIR__
 );

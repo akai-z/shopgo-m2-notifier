@@ -1,6 +1,6 @@
 {
-    "name": "shopgo/limiter",
-    "description": "Prevents users from adding products, if a certain products count limit is met.",
+    "name": "shopgo/notifier",
+    "description": "Pushes and removes ShopGo's notifications.",
     "type": "magento2-module",
     "version": "1.0.0",
     "license": [
@@ -16,7 +16,7 @@
             "registration.php"
         ],
         "psr-4": {
-            "ShopGo\\Limiter\\": ""
+            "ShopGo\\Notifier\\": ""
         }
     },
     "authors": [
