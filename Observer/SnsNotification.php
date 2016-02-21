@@ -15,7 +15,7 @@ class SnsNotification implements ObserverInterface
     /**
      * Notifier code
      */
-    const CODE = 'notifier';
+    const CODE = 'ShopGo_Notifier';
 
     /**
      * Add notification action
