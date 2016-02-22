@@ -7,6 +7,6 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="sns_notification">
-        <observer name="sns_notification_observer" instance="ShopGo\Notifier\Observer\SnsNotification"/>
+        <observer name="notifier_observer" instance="ShopGo\Notifier\Observer\SnsNotification"/>
     </event>
 </config>
