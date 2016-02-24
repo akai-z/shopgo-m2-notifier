@@ -10,25 +10,6 @@ use Magento\Framework\Notification\MessageInterface;
 class Notification extends \Magento\Framework\Model\AbstractModel
 {
     /**
-     * Notification xml path
-     */
-    const XML_PATH_NOTIFICATION = 'notifier/notification';
-
-    /**
-     * Config factory model
-     *
-     * @var \Magento\Config\Model\Config\Factory
-     */
-    protected $_configFactory;
-
-    /**
-     * App state
-     *
-     * @var \Magento\Framework\App\State
-     */
-    protected $_appState;
-
-    /**
      * Notification inbox model
      *
      * @var \Magento\AdminNotification\Model\Inbox
@@ -36,127 +17,110 @@ class Notification extends \Magento\Framework\Model\AbstractModel
     protected $_notificationInbox;
 
     /**
-     * @param \Magento\Config\Model\Config\Factory $configFactory
-     * @param \Magento\Framework\App\State $appState
+     * Object manager
+     *
+     * @var \Magento\Framework\ObjectManagerInterface
+     */
+    protected $_objectManager;
+
+    /**
+     * @param \Magento\Framework\Model\Context $context
+     * @param \Magento\Framework\Registry $registry
      * @param \Magento\AdminNotification\Model\Inbox $notificationInbox
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
      */
     public function __construct(
-        \Magento\Config\Model\Config\Factory $configFactory,
-        \Magento\Framework\App\State $appState,
-        \Magento\AdminNotification\Model\Inbox $notificationInbox
+        \Magento\Framework\Model\Context $context,
+        \Magento\Framework\Registry $registry,
+        \Magento\AdminNotification\Model\Inbox $notificationInbox,
+        \Magento\Framework\ObjectManagerInterface $objectManager
     ) {
-        $this->_configFactory = $configFactory;
-        $this->_appState = $appState;
         $this->_notificationInbox = $notificationInbox;
+        $this->_objectManager = $objectManager;
+        parent::__construct($context, $registry);
     }
 
     /**
-     * Get config model
-     *
-     * @param array $configData
-     * @return \Magento\Config\Model\Config
+     * @return void
      */
-    protected function _getConfigModel($configData = [])
+    protected function _construct()
     {
-        /** @var \Magento\Config\Model\Config $configModel  */
-        $configModel = $this->_configFactory->create(['data' => $configData]);
-        return $configModel;
+        $this->_init('ShopGo\Notifier\Model\ResourceModel\Notification');
     }
 
     /**
-     * Get config data value
+     * Get notification model
      *
-     * @param string $path
+     * @return \ShopGo\Notifier\Model\Notification
+     */
+    private function _getModel()
+    {
+        return $this->_objectManager->create('ShopGo\Notifier\Model\Notification');
+    }
+
+    /**
+     * Get notification inbox ID
+     *
+     * @param string $identifier
+     * @return int
+     */
+    protected function _getNotificationInboxId($identifier)
+    {
+        return $this->_getModel()->load($identifier)
+            ->getNotificationInboxId();
+    }
+
+    /**
+     * Set notification inbox ID
+     *
+     * @param string $identifier
+     * @param string $notificationInboxId
      * @return string
      */
-    protected function _getConfigData($path)
+    protected function _setNotificationInboxId($identifier, $notificationInboxId)
     {
-        return $this->_getConfigModel()->getConfigDataValue($path);
+        $this->_getModel()->setIdentifier($identifier)
+            ->setNotificationInboxId($notificationInboxId)
+            ->save();
+
+        return __('Notification ID has been set!');
     }
 
     /**
-     * Set config data
+     * Check whether notification is new
      *
-     * @param array $configData
+     * @param string $identifier
+     * @return bool
      */
-    protected function _setConfigData($configData = [])
+    public function isNewNotification($identifier)
     {
-        $this->_getConfigModel($configData)->save();
-    }
+        $notificationId = $this->_getModel()->getCollection()
+            ->addFieldToFilter('identifier', $identifier)
+            ->getFirstItem()
+            ->getId();
 
-    /**
-     * Get notification ID
-     *
-     * @param string $notificationName
-     * @return string
-     */
-    public function getNotificationId($notificationName)
-    {
-        return $this->_getConfigModel()->getConfigDataValue(
-            self::XML_PATH_NOTIFICATION . '/' . $notificationName
-        );
-    }
-
-    /**
-     * Set notification ID
-     *
-     * @param string $notificationName
-     * @param string $notificationId
-     * @return string
-     */
-    public function setNotificationId($notificationName, $notificationId)
-    {
-        $result = __('Could not set notification ID!');
-
-        try {
-            $group = [
-                'notification' => [
-                    'fields' => [
-                        $notificationName => [
-                            'value' => $notificationId
-                        ]
-                    ]
-                ]
-            ];
-
-            $configData = [
-                'section' => 'notifier',
-                'website' => null,
-                'store'   => null,
-                'groups'  => $group
-            ];
-
-            $this->_setConfigData($configData);
-
-            $result = __('Notification ID has been set!');
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $messages = explode("\n", $e->getMessage());
-
-            foreach ($messages as $message) {
-                $result .= "\n" . $message;
-            }
-        } catch (\Exception $e) {
-            $result .= "\n" . $e->getMessage();
-        }
-
-        return $result;
+        return $notificationId ? false : true;
     }
 
     /**
      * Add notification
      *
      * @param int $severity
-     * @param string $name
+     * @param string $identifier
      * @param string $title
      * @param string|string[] $description
      * @param string $url
      * @param bool $isInternal
      * @return boolean
      */
-    public function addNotification($severity, $name, $title, $description, $url = '', $isInternal = true)
+    public function addNotification($severity, $identifier, $title, $description, $url = '', $isInternal = true)
     {
         $result = false;
-        
+
+        if (!$this->isNewNotification($identifier)) {
+            return $result;
+        }
+
         switch ($severity) {
             case MessageInterface::SEVERITY_CRITICAL:
                 $this->_notificationInbox->addCritical($title, $description, $url, $isInternal);
@@ -181,42 +145,48 @@ class Notification extends \Magento\Framework\Model\AbstractModel
 
         if ($result) {
             $notice = $this->_notificationInbox->loadLatestNotice();
-            $this->setNotificationId($name, $notice->getNotificationId());
+            $this->_setNotificationInboxId($identifier, $notice->getNotificationId());
         }
-        
+
         return $result;
+    }
+
+    /**
+     * Delete notifier notification by identifier
+     *
+     * @param string $identifier
+     * @return boolean
+     */
+    public function deleteByIdentifier($identifier)
+    {
+        $model = $this->_getModel()->load($identifier);
+        $model->delete();
+
+        return true;
     }
 
     /**
      * Remove notification
      *
-     * @param string $notificationName
+     * @param string $identifier
      * @return boolean
      */
-    public function removeNotification($notificationName)
+    public function removeNotification($identifier)
     {
         $result = false;
-        $notificationId = $this->getNotificationId($notificationName);
+        $notificationInboxId = $this->_getNotificationInboxId($identifier);
 
-        if ($notificationId) {
-            $notification = $this->_notificationInbox->load($notificationId);
+        if ($notificationInboxId) {
+            $notification = $this->_notificationInbox->load($notificationInboxId);
 
             $notification->setIsRemove(1)->save();
-            $this->setNotificationId($notificationName, 0);
+            //@TODO: Loading the same notification again.
+            //Not a pretty sight! Might change it later.
+            $this->deleteByIdentifier($identifier);
 
             $result = true;
         }
-        
-        return $result;
-    }
 
-    /**
-     * Set area code
-     *
-     * @param string $code
-     */
-    public function setAreaCode($code)
-    {
-        $this->_appState->setAreaCode($code);
+        return $result;
     }
 }

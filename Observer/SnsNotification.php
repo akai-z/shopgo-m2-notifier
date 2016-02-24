@@ -68,7 +68,7 @@ class SnsNotification implements ObserverInterface
 
                 $this->_notification->addNotification(
                     $notification['arguments']['severity'],
-                    $notification['arguments']['name'],
+                    $notification['arguments']['identifier'],
                     $notification['arguments']['title'],
                     $notification['arguments']['description'],
                     $url,
@@ -77,7 +77,7 @@ class SnsNotification implements ObserverInterface
                 break;
             case self::ACTION_REMOVE_NOTIFICATION:
                 $this->_notification->removeNotification(
-                    $notification['arguments']['name']
+                    $notification['arguments']['identifier']
                 );
                 break;
         }

@@ -23,9 +23,9 @@ class AddNotification extends Command
     const SEVERITY_ARGUMENT = 'severity';
 
     /**
-     * Name argument
+     * Identifier argument
      */
-    const NAME_ARGUMENT = 'name';
+    const IDENTIFIER_ARGUMENT = 'identifier';
 
     /**
      * Title argument
@@ -74,10 +74,10 @@ class AddNotification extends Command
                 'Severity'
             ),
             new InputArgument(
-                self::NAME_ARGUMENT,
+                self::IDENTIFIER_ARGUMENT,
                 null,
                 InputArgument::REQUIRED,
-                'Name'
+                'Identifier'
             ),
             new InputArgument(
                 self::TITLE_ARGUMENT,
@@ -117,21 +117,28 @@ class AddNotification extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $result = 'Could not add notification!';
-
         $severity    = $input->getArgument(self::SEVERITY_ARGUMENT);
-        $name        = $input->getArgument(self::NAME_ARGUMENT);
+        $identifier  = $input->getArgument(self::IDENTIFIER_ARGUMENT);
         $title       = $input->getArgument(self::TITLE_ARGUMENT);
         $description = $input->getArgument(self::DESCRIPTION_ARGUMENT);
+        $url         = $input->getArgument(self::URL_ARGUMENT);
+        $isInternal  = $input->getArgument(self::IS_INTERNAL_ARGUMENT);
 
-        if (!is_null($severity) && !is_null($name) && !is_null($title) && !is_null($description)) {
-            $this->_notification->setAreaCode('adminhtml');
-
-            $result = $this->_notification->addNotification($severity, $name, $title, $description);
+        if (
+            !is_null($severity)
+            && !is_null($identifier)
+            && !is_null($title)
+            && !is_null($description)
+        ) {
+            $result = $this->_notification->addNotification(
+                $severity, $identifier,
+                $title, $description,
+                $url, $isInternal
+            );
 
             $result = $result
-                ? "Notification '{$name}' has been added!"
-                : "Could not add notification '{$name}'!";
+                ? "Notification '{$identifier}' has been added!"
+                : "Could not add notification '{$identifier}'!";
         } else {
             throw new \InvalidArgumentException('Missing arguments.');
         }

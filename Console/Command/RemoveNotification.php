@@ -18,9 +18,9 @@ use ShopGo\Notifier\Model\Notification;
 class RemoveNotification extends Command
 {
     /**
-     * Name argument
+     * Identifier argument
      */
-    const NAME_ARGUMENT = 'name';
+    const IDENTIFIER_ARGUMENT = 'identifier';
 
     /**
      * @var Notification
@@ -45,7 +45,7 @@ class RemoveNotification extends Command
             ->setDescription('Remove notification')
             ->setDefinition([
                 new InputArgument(
-                    self::NAME_ARGUMENT,
+                    self::IDENTIFIER_ARGUMENT,
                     null,
                     InputArgument::REQUIRED,
                     'Name'
@@ -60,20 +60,15 @@ class RemoveNotification extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $result = 'Could not remove notification!';
-        
-        $name  = $input->getArgument(self::NAME_ARGUMENT);
+        $identifier = $input->getArgument(self::IDENTIFIER_ARGUMENT);
 
-        if (!is_null($name)) {
-            $this->_notification->setAreaCode('adminhtml');
-
-            $result = $this->_notification->removeNotification($name);
-
+        if (!is_null($identifier)) {
+            $result = $this->_notification->removeNotification($identifier);
             $result = $result
-                ? "Notification '{$name}' has been remove!"
-                : "Could not remove notification '{$name}'!";
+                ? "Notification '{$identifier}' has been remove!"
+                : "Could not remove notification '{$identifier}'!";
         } else {
-            throw new \InvalidArgumentException('Argument ' . self::NAME_ARGUMENT . ' is missing.');
+            throw new \InvalidArgumentException('Argument ' . self::IDENTIFIER_ARGUMENT . ' is missing.');
         }
 
         $output->writeln('<info>' . $result . '</info>');
