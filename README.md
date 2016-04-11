@@ -4,11 +4,13 @@ Notifier
 
 ## Synopsis
 
-TODO
+A module that publishes custom Magento 2 notifications.
 
 ## Overview
 
-TODO
+Notifier module allows users to publish custom notifications to Magento 2 admin panel notification area.
+Plus, deleting them whenever they want.
+The module also has the ability to listen Amazon SNS module notifications and publish them.
 
 ## Installation
 
