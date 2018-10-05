@@ -1,7 +1,7 @@
 Notifier `[UNMAINTAINED]`
 =========================
 
-`Latest code can be found in develop branch.`
+## `Latest code can be found in develop branch.`
 
 ## Synopsis
 
