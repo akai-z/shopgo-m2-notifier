@@ -1,5 +1,5 @@
-Notifier
-========
+Notifier `[UNMAINTAINED]`
+=========================
 
 
 ## Synopsis
